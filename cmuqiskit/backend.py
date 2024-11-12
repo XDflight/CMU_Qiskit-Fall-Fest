@@ -11,49 +11,57 @@ from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager a
 
 
 class Backend:
-    """Qiskit Quantum Backend"""
+    """ Qiskit Quantum Backend
 
-    def __init__(self, provider: Union[str, None] = None, executor: str = 'sampler',
-                 executor_seed: Union[int, None] = None, transpiler_seed: Union[int, None] = None):
+    Attributes:
+        provider (str): The name of the quantum computing service.
+        executor (str): The type of execution engine to use.
+        transpiler_seed (int, None): The seed for the transpiler. None if not given by the user.
+        simulator_seed (int, None): The seed for the simulator. None if not given by the user.
+    """
+
+    def __init__(self, provider: str = 'simulator', executor: str = 'sampler',
+                 transpiler_seed: Union[int, None] = None, simulator_seed: Union[int, None] = None):
         """ Instantiate a Qiskit Quantum Backend
 
-        :param provider: The name of the quantum computing service (e.g. 'qiskit-ibm').
-                         Leave None to use the simulator.
-                         Currently only supports the simulator.
-        :type provider: str or None
+        :param provider: The name of the quantum computing service (e.g. 'simulator' or 'ibm_xxx').
+                         Currently only supports 'simulator'.
+        :type provider: str
 
         :param executor: The type of execution engine to use (e.g. 'sampler').
                          Currently only supports 'sampler'.
         :type executor: str
 
-        :param executor_seed: The seed for the execution engine (e.g. 1234).
-        :type executor_seed: int
-
-        :param transpiler_seed: The seed for the transpiler engine (e.g. 1234).
+        :param transpiler_seed: The seed for the transpiler (e.g. 1234).
                                 Must be non-negative.
-        :type transpiler_seed: int
+                                Leave None to use a random seed (cannot be retrieved).
+        :type transpiler_seed: int, None
+
+        :param simulator_seed: The seed for the simulator (e.g. 1234).
+                               Leave None to use a random seed (cannot be retrieved).
+        :type simulator_seed: int, None
         """
         self.provider = provider
         self.executor = executor
-        self.executor_seed = executor_seed
         self.transpiler_seed = transpiler_seed
+        self.simulator_seed = simulator_seed
 
         self._provider: _BaseProvider = Backend._new_provider(provider=provider)
         self._executor: _BaseExecutor = Backend._new_executor(provider=self._provider,
                                                               executor=executor,
-                                                              seed=executor_seed)
+                                                              seed=simulator_seed)
         self._transpiler: _BaseTranspiler = Backend._new_transpiler(provider=self._provider,
                                                                     seed=transpiler_seed)
 
     def __repr__(self):
         return (f'<Backend: provider={self.provider}, '
                 f'executor={self.executor}, '
-                f'executor_seed={self.executor_seed}, '
-                f'transpiler_seed={self.transpiler_seed}>')
+                f'transpiler_seed={self.transpiler_seed}, '
+                f'simulator_seed={self.simulator_seed}>')
 
     @staticmethod
-    def _new_provider(provider: Union[str, None] = None) -> _BaseProvider:
-        if provider is None:
+    def _new_provider(provider: str = 'simulator') -> _BaseProvider:
+        if provider == 'simulator':
             # Instantiate a fake provider
             return _FakeProvider()
         raise ValueError(f'Provider {provider} is not supported')
@@ -76,7 +84,7 @@ class Backend:
     @staticmethod
     def _new_transpiler(provider: _BaseProvider,
                         seed: Union[int, None] = None) -> _BaseTranspiler:
-        assert seed is None or seed >= 0, 'Transpiler seed must be non-negative integer'
+        assert seed is None or seed >= 0, 'Transpiler seed must be non-negative'
         # Instantiate a transpiler
         return _generate_preset_pass_manager(
             seed_transpiler=seed,
