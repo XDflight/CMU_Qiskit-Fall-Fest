@@ -30,6 +30,7 @@ class Backend:
         :type executor_seed: int
 
         :param transpiler_seed: The seed for the transpiler engine (e.g. 1234).
+                                Must be non-negative.
         :type transpiler_seed: int
         """
         self.provider = provider
@@ -75,6 +76,7 @@ class Backend:
     @staticmethod
     def _new_transpiler(provider: _BaseProvider,
                         seed: Union[int, None] = None) -> _BaseTranspiler:
+        assert seed is None or seed >= 0, 'Transpiler seed must be non-negative integer'
         # Instantiate a transpiler
         return _generate_preset_pass_manager(
             seed_transpiler=seed,
