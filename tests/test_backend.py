@@ -1,4 +1,4 @@
 from cmuqiskit import *
 
-backend = Backend()
-print(backend)
+print(Backend())
+print(Backend(executor_seed=42, transpiler_seed=42))

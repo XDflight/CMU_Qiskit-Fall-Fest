@@ -32,12 +32,23 @@ class Backend:
         :param transpiler_seed: The seed for the transpiler engine (e.g. 1234).
         :type transpiler_seed: int
         """
+        self.provider = provider
+        self.executor = executor
+        self.executor_seed = executor_seed
+        self.transpiler_seed = transpiler_seed
+
         self._provider: _BaseProvider = Backend._new_provider(provider=provider)
         self._executor: _BaseExecutor = Backend._new_executor(provider=self._provider,
                                                               executor=executor,
                                                               seed=executor_seed)
         self._transpiler: _BaseTranspiler = Backend._new_transpiler(provider=self._provider,
                                                                     seed=transpiler_seed)
+
+    def __repr__(self):
+        return (f'<Backend: provider={self.provider}, '
+                f'executor={self.executor}, '
+                f'executor_seed={self.executor_seed}, '
+                f'transpiler_seed={self.transpiler_seed}>')
 
     @staticmethod
     def _new_provider(provider: Union[str, None] = None) -> _BaseProvider:
